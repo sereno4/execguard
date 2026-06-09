@@ -22,6 +22,7 @@ flowchart TD
     G --> J["Syslog"]
 
 
+
 ### Detection Capabilities
 
 | Rule Name | Severity | Description |
