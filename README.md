@@ -11,17 +11,16 @@ The architecture separates event collection from policy execution, allowing secu
 
 ```mermaid
 flowchart TD
-    A[eBPF Program] --> B[Events]
-    B --> C[Ring Buffer]
-    C --> D[mmap]
-    D --> E[Agent (Async Rust)]
-    E --> F[WASM Runtime (Wasmtime)]
-    F --> G[Policy Module (.wasm file)]
-    G --> H[JSON Events]
-    G --> I[Prometheus Metrics]
-    G --> J[Syslog]
+    A["eBPF Program"] --> B["Events"]
+    B --> C["Ring Buffer"]
+    C --> D["mmap"]
+    D --> E["Agent (Async Rust)"]
+    E --> F["WASM Runtime (Wasmtime)"]
+    F --> G["Policy Module (.wasm file)"]
+    G --> H["JSON Events"]
+    G --> I["Prometheus Metrics"]
+    G --> J["Syslog"]
 
-## Features
 
 ### Detection Capabilities
 
