@@ -9,12 +9,6 @@ ExecGuard is an experimental security platform that captures Linux process execu
 
 The architecture separates event collection from policy execution, allowing security rules to be updated independently from the kernel instrumentation layer.
 
-Key Characteristics
-Zero-overhead monitoring: eBPF runs in kernel space with minimal performance impact
-Sandboxed policies: WebAssembly isolates rule execution from the host system
-Hot-swappable rules: Update detection logic without restarting or recompiling kernel code
-Async processing: Non-blocking Rust pipeline for high-throughput scenarios
-Architecture
 ---
 config:
   layout: elk
@@ -35,7 +29,6 @@ graph TD
     class A,B kernelSpace
     class C,D,E userSpace
     class F,G,H output
-text
 
 
 ---
