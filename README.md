@@ -1,11 +1,25 @@
-✨ ExecGuard - README Versão Clean & Professional
-ExecGuard
+<div align="center">
+
+# ExecGuard
+
 Runtime Security Pipeline using eBPF telemetry and WebAssembly policy execution
 
-RusteBPFWASMLicense: MIT
+<p>
+  <img src="https://img.shields.io/badge/Rust-1.95+-orange">
+  <img src="https://img.shields.io/badge/eBPF-Aya-blue">
+  <img src="https://img.shields.io/badge/WASM-Wasmtime-purple">
+  <img src="https://img.shields.io/badge/License-MIT-green">
+</p>
 
-Overview
-ExecGuard is an experimental security platform that captures Linux process execution events through eBPF and evaluates them inside sandboxed WebAssembly modules.
+</div>
+
+---
+
+## Overview
+
+ExecGuard is an experimental runtime security platform that combines kernel-level telemetry with sandboxed policy execution.
+
+---
 
 The architecture separates event collection from policy execution, allowing security rules to be updated independently from the kernel instrumentation layer.
 
