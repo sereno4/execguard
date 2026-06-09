@@ -1,0 +1,21 @@
+[package]
+name = "execguard-loader"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aya = { workspace = true, features = ["async_tokio"] }
+aya-log = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+clap = { version = "4.5", features = ["derive"] }
+log = "0.4"
+env_logger = "0.11"
+execguard-common = { path = "../execguard-common", features = ["user"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+bytes = "1.5"
+
+[[bin]]
+name = "execguard-loader"
+path = "src/main.rs"

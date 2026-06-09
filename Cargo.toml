@@ -1,0 +1,16 @@
+[workspace]
+members = [
+    "execguard-common",
+    "execguard-ebpf-real",
+]
+resolver = "2"
+
+[workspace.dependencies]
+aya = { version = "0.13", default-features = false }
+aya-ebpf = "0.1"
+aya-log = "0.2"
+aya-log-ebpf = "0.1"
+tokio = { version = "1.35", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+anyhow = "1.0"
