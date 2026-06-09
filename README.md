@@ -8,15 +8,17 @@ Overview
 ExecGuard is an experimental security platform that captures Linux process execution events through eBPF and evaluates them inside sandboxed WebAssembly modules.
 
 The architecture separates event collection from policy execution, allowing security rules to be updated independently from the kernel instrumentation layer.
+<details>
+<summary>📖 Opção: Mermaid Corrigido (se insistir)</summary>
 
-flowchart LR
-
-A[eBPF Probe] --> B[Rust Loader]
-B --> C[Event Stream]
-C --> D[WASM Runtime]
-D --> E[Policy Engine]
-E --> F[Risk Scoring]
-F --> G[JSON Alerts]
+```markdown
+```mermaid
+graph LR
+    A[eBPF Program] --> B[Ring Buffer]
+    B --> C[Agent]
+    C --> D[WASM Runtime]
+    D --> E[Policy Module]
+    E --> F[Output]
 
 
 ### Detection Capabilities
