@@ -15,34 +15,26 @@ Sandboxed policies: WebAssembly isolates rule execution from the host system
 Hot-swappable rules: Update detection logic without restarting or recompiling kernel code
 Async processing: Non-blocking Rust pipeline for high-throughput scenarios
 Architecture
-┌─────────────────────────────────────────────────────────────┐
-│ Kernel Space │
-│ ┌──────────────┐ ┌──────────────────────────┐ │
-│ │ eBPF │ ──→ │ Ring Buffer (Events) │ │
-│ │ Program │ │ │ │
-│ └──────────────┘ └──────────┬───────────────┘ │
-└──────────────────────────────────────┼──────────────────────┘
-│ mmap
-┌──────────────────────────────────────┼──────────────────────┐
-│ User Space │ │
-│ ┌───────▼───────┐ │
-│ │ Agent │ │
-│ │ (Async Rust) │ │
-│ └───────┬───────┘ │
-│ │ │
-│ ┌───────▼───────┐ │
-│ │ WASM Runtime │ │
-│ │ (Wasmtime) │ │
-│ └───────┬───────┘ │
-│ │ │
-│ ┌───────▼───────┐ │
-│ │ Policy Module │ │
-│ │ (.wasm file) │ │
-│ └───────────────┘ │
-│ │
-│ Outputs: JSON Events | Prometheus Metrics | Syslog │
-└──────────────────────────────────────────────────────────────┘
-
+---
+config:
+  layout: elk
+---
+graph TD
+    A["eBPF Program"] -->|Events| B["Ring Buffer"]
+    B -->|mmap| C["Agent<br/>(Async Rust)"]
+    C --> D["WASM Runtime<br/>(Wasmtime)"]
+    D --> E["Policy Module<br/>(.wasm file)"]
+    E --> F["JSON Events"]
+    E --> G["Prometheus Metrics"]
+    E --> H["Syslog"]
+    
+    classDef kernelSpace stroke:#818cf8,fill:#eef2ff
+    classDef userSpace stroke:#2dd4bf,fill:#f0fdfa
+    classDef output stroke:#4ade80,fill:#f0fdf4
+    
+    class A,B kernelSpace
+    class C,D,E userSpace
+    class F,G,H output
 text
 
 
