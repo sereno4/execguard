@@ -1,428 +1,377 @@
-🔒 ExecGuard - Transformação para Portfólio Top Tier
-Excelente projeto! eBPF + WASM + Rust é uma combinação extremamente rara e valiosa no mercado. Vou te dar um plano completo para deixar isso impecável! 🚀
-
-📊 Diagnóstico Atual vs. Potencial
-Aspecto
-Estado Atual
-Potencial
-README	Básico, funcional	🎯 Storytelling técnico + Visual impactante
-Arquitetura	Texto simples	📐 Diagramas interativos (Mermaid)
-Demo	Não mencionada	🎬 GIF/Vídeo + Deploy ao vivo
-CI/CD	Não visível	⚙️ Actions com testes + benchmarks
-Documentação	Mínima	📚 Book.md com guias detalhados
-Badges	Ausentes	🏅 Build, Coverage, Version, License
-
-🎯 Plano de Transformação (Passo a Passo)
-📦 ESTRUTURA FINAL DO REPOSITÓRIO
-text
-
-execguard/
-├── .github/
-│   ├── workflows/
-│   │   ├── ci.yml              # Testes automatizados
-│   │   ├── release.yml         # Publicação de versões
-│   │   └── benchmark.yml       # Performance checks
-│   ├── ISSUE_TEMPLATE/
-│   └── PULL_REQUEST_TEMPLATE.md
-├── docs/
-│   ├── book.md                 # Documentação completa
-│   ├── architecture.md         # Detalhes técnicos
-│   ├── performance.md          # Benchmarks
-│   └── examples/               # Casos de uso
-├── execguard-ebpf/
-├── execguard-agent/
-├── execguard-wasm/
-├── examples/
-│   ├── basic_usage.py
-│   ├── custom_rules.wat        # Exemplo WASM
-│   └── integration_test.sh
-├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── e2e/
-├── scripts/
-│   ├── setup_dev.sh
-│   ├── run_demo.sh
-│   └── benchmark.sh
-├── assets/
-│   ├── demo.gif               # Animação do sistema
-│   ├── architecture.png        # Diagrama HQ
-│   └── logo.svg
-├── Cargo.toml
-├── README.md                   # ⭐ ESTRELA DO SHOW
-└── LICENSE
-✨ README.md - Versão Top Tier
-Aqui está o template completo que você pode usar:
-
-ExecGuard Logo
-
+✨ ExecGuard - README Versão Clean & Professional
 ExecGuard
-Runtime Security Pipeline powered by eBPF + WebAssembly
+Runtime Security Pipeline using eBPF telemetry and WebAssembly policy execution
 
+RusteBPFWASMLicense: MIT
 
-
-🎯 Overview
+Overview
 ExecGuard is an experimental security platform that captures Linux process execution events through eBPF and evaluates them inside sandboxed WebAssembly modules.
 
-⚡ Performance: < 130µs latency per event | >10k events/sec throughput | 64KB memory footprint
+The architecture separates event collection from policy execution, allowing security rules to be updated independently from the kernel instrumentation layer.
 
-Why ExecGuard?
-Traditional security tools suffer from:
+Key Characteristics
+Zero-overhead monitoring: eBPF runs in kernel space with minimal performance impact
+Sandboxed policies: WebAssembly isolates rule execution from the host system
+Hot-swappable rules: Update detection logic without restarting or recompiling kernel code
+Async processing: Non-blocking Rust pipeline for high-throughput scenarios
+Architecture
+┌─────────────────────────────────────────────────────────────┐
+│ Kernel Space │
+│ ┌──────────────┐ ┌──────────────────────────┐ │
+│ │ eBPF │ ──→ │ Ring Buffer (Events) │ │
+│ │ Program │ │ │ │
+│ └──────────────┘ └──────────┬───────────────┘ │
+└──────────────────────────────────────┼──────────────────────┘
+│ mmap
+┌──────────────────────────────────────┼──────────────────────┐
+│ User Space │ │
+│ ┌───────▼───────┐ │
+│ │ Agent │ │
+│ │ (Async Rust) │ │
+│ └───────┬───────┘ │
+│ │ │
+│ ┌───────▼───────┐ │
+│ │ WASM Runtime │ │
+│ │ (Wasmtime) │ │
+│ └───────┬───────┘ │
+│ │ │
+│ ┌───────▼───────┐ │
+│ │ Policy Module │ │
+│ │ (.wasm file) │ │
+│ └───────────────┘ │
+│ │
+│ Outputs: JSON Events | Prometheus Metrics | Syslog │
+└──────────────────────────────────────────────────────────────┘
 
-❌ Kernel coupling: Rules hardcoded in kernel space
-❌ Slow iteration: Recompile entire module for rule changes
-❌ Security risks: Arbitrary code execution in ring 0
-ExecGuard solves this with:
+text
 
-✅ Separation of concerns: Event collection (eBPF) ⊥ Policy execution (WASM)
-✅ Hot-swappable policies: Update rules without kernel restart
-✅ Sandboxed execution: WASM runtime isolates policy logic
-✅ Async architecture: Non-blocking Rust pipeline for high throughput
-🏗️ Architecture
-flowchart TB    subgraph Kernel Space["🐧 Kernel Space (Ring 0)"]        EBPF[eBPF Program<br/>Process Hook]        MAPS[eBPF Maps<br/>Event Buffer]    end        subgraph User Space["💻 User Space (Ring 3)"]        AGENT[ExecGuard Agent<br/>Async Rust Runtime]        LOADER[Aya Loader<br/>eBPF CO-RE]                subgraph WASM["⚙️ WASM Sandbox"]            ENGINE[Wasmtime Engine<br/>Fastest WASM Runtime]            POLICY[Security Policy<br/>Custom Rules.wasm]        end                subgraph Output["📤 Outputs"]            EVENTS[JSON Events<br/>stdout/file/socket]            METRICS[Prometheus Metrics<br/>:9090/metrics]            OTLP[OpenTelemetry Traces]        end    end        EBPF --> |bpf_ringbuf| MAPS    MAPS --> |mmap| AGENT    LOADER --> |load/attach| EBPF    AGENT --> |compile&execute| ENGINE    ENGINE --> |instantiate| POLICY    POLICY --> |risk_score| AGENT    AGENT --> Events    AGENT --> Metrics    AGENT --> OTLP        style EBPF fill:#0ADB8F,color:#000    style WASM fill:#654FF0,color:#fff    style AGENT fill:#f74c00,color:#fff
-Data Flow
-Metrics
-Out
-Policy Module
-WASM Engine
-Agent (Rust)
-Kernel (eBPF)
-Metrics
-Out
-Policy Module
-WASM Engine
-Agent (Rust)
-Kernel (eBPF)
-Export to Prometheus
-Process Execution Event (execve)
-Parse event struct
-Load WASM module
-Execute evaluate(event)
-Return risk_score
-Score + metadata
-Apply threshold logic
-Allow/Deny/Kill decision
-Emit JSON event
-⚡ Features
-Core Capabilities
-Feature
-Description
-Tech Stack
-eBPF Telemetry	Zero-overhead process monitoring from kernel	Aya Framework, libbpf
-WASM Sandboxing	Secure policy execution in isolated runtime	Wasmtime, wasmtime-rs
-Async Pipeline	High-throughput event processing	Tokio, async-stream
-Hot Reload	Update policies without restart	File watcher + WASM compilation
 
-Detection Rules
-Rule
-Severity
-Description
-Example
-BANNED_BINARY	🔴 Critical	Blacklisted executable	nc, nmap in prod servers
-TMP_EXECUTION	🟠 High	Execution from /tmp	Malware dropper pattern
-COMM_MISMATCH	🟡 Medium	Process name spoofing	bash pretending to be sshd
-REVERSE_SHELL	🔴 Critical	Reverse shell indicators	nc -e /bin/bash
+---
 
-Example Detected Event
-📋 Click to view full JSON schema
-🚀 Quick Start
-Prerequisites
-Rust nightly (toolchain: nightly-2024-01-01)
-Linux Kernel >= 5.8 (for BTF support)
-clang >= 12 (for eBPF compilation)
-Installation
-bash
+## Features
 
-# Clone repository
-git clone https://github.com/YOUR_USER/execguard.git
+### Detection Capabilities
+
+| Rule Name | Severity | Description |
+|-----------|----------|-------------|
+| `BANNED_BINARY` | Critical | Execution of blacklisted executables |
+| `TMP_EXECUTION` | High | Process launched from `/tmp` directory |
+| `COMM_MISMATCH` | Medium | Process name does not match executable |
+| `REVERSE_SHELL` | Critical | Indicators of reverse shell activity |
+
+### Technical Features
+
+- **eBPF-based process monitoring** with Aya framework
+- **WebAssembly sandboxing** using Wasmtime runtime
+- **Async Rust pipeline** built on Tokio
+- **Runtime risk scoring** with configurable thresholds
+- **JSON event output** for integration with SIEM systems
+- **Hot-swappable policy layer** via file watching
+
+---
+
+## Performance
+
+Benchmarks performed on AMD EPYC 7742, Linux 6.5.0, 16GB RAM:
+
+| Metric | Value |
+|--------|-------|
+| WASM latency (p50) | ~85 µs |
+| WASM latency (p99) | ~130 µs |
+| Throughput | >10,000 events/sec |
+| Memory per WASM instance | 64 KB |
+| WASM binary size | ~15 KB |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Rust nightly toolchain (`rustup default nightly`)
+- Linux kernel >= 5.8 (with BTF support)
+- Clang >= 12 (for eBPF compilation)
+- Make and C build tools
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/youruser/execguard.git
 cd execguard
 
-# Setup development environment
+# Install development dependencies
 ./scripts/setup_dev.sh
 
 # Build all components
 cargo build --release
 
-# Run with example policy
-./scripts/run_demo.sh
-Usage Example
-rust
+# Run with demo configuration
+./target/release/execguard-agent --config examples/demo.toml
+Example Usage
+Monitor process executions and detect suspicious behavior:
 
-use execguard_agent::{Agent, Config};
+bash
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = Config::builder()
-        .wasm_policy_path("examples/rules/security.wasm")
-        .threshold(7) // Block events with score >= 7
-        .output_format(OutputFormat::JsonStdout)
-        .build();
-    
-    let mut agent = Agent::new(config).await?;
-    
-    // Start monitoring
-    agent.run().await?;
-    
-    Ok(())
+# Basic mode - output to stdout
+sudo ./target/release/execguard-agent
+
+# With custom policy
+sudo ./target/release/execguard-agent --policy path/to/rules.wasm
+
+# With Prometheus metrics enabled
+sudo ./target/release/execguard-agent --metrics :9090
+Example Event Output
+json
+
+{
+  "timestamp": "2024-01-15T10:23:45Z",
+  "pid": 1234,
+  "uid": 1000,
+  "comm": "bash",
+  "filename": "/tmp/nc",
+  "argv": ["nc", "-e", "/bin/bash", "10.0.0.1", "4444"],
+  "risk_score": 10,
+  "matched_rules": ["TMP_EXECUTION", "REVERSE_SHELL"]
 }
-Writing Custom Policies (WASM)
-🔧 Advanced: Creating Detection Rules in WebAssembly
-📊 Performance Benchmarks
-Tested on AMD EPYC 7742 64-Core | Linux 6.5.0-generic | 16GB RAM
-
-Metric
-Value
-Notes
-WASM Latency (p50)	~85µs	Including compile + execute
-WASM Latency (p99)	~130µs	Cold start scenario
-Throughput	>10k events/sec	Sustained load test
-Memory Footprint	64 KB	Per WASM instance
-Binary Size	~15 KB	Compiled .wasm file
-CPU Overhead	< 2%	eBPF probe impact
-
-📈 Full Benchmark Results
-🧪 Testing Strategy
-bash
-
-# Unit tests (no root required)
-cargo test --lib
-
-# Integration tests (requires sudo)
-sudo -E cargo test --test integration
-
-# End-to-end with simulated events
-cargo test --test e2e -- --nocapture
-
-# eBPF compilation check
-cargo xtask bpf build
-Coverage Report
-coverage
-
-🔍 Detailed coverage by module
-</details>
-
-🗺️ Roadmap
-Current Status ✅
- WASM engine integration (Wasmtime)
- Event simulation framework
- Aya-based eBPF loader
- Cross-compilation support
- Basic detection rules
-In Progress 🔄
- Native Linux validation (real kernel testing)
- Stateful correlation engine
- RocksDB-backed event storage
-Planned Features 🚀
- Hot reload of WASM modules without downtime
- Prometheus metrics endpoint (/metrics)
- OpenTelemetry integration for distributed tracing
- Rule builder UI (Web dashboard)
- ML-based anomaly detection (optional WASM module)
- Kubernetes admission controller integration
-See docs/roadmap.md for detailed timeline.
-
-🏗️ System Design Deep Dive
-🔬 Technical Architecture Details
-🤝 Contributing
-We welcome contributions! Please see CONTRIBUTING.md for guidelines.
-
-Development Workflow
-bash
-
-# Fork & clone
-git clone https://github.com/YOUR_USERNAME/execguard.git
-
-# Create feature branch
-git checkout -b feature/amazing-feature
-
-# Make changes + tests
-cargo test && cargo fmt && cargo clippy
-
-# Push & open PR
-git push origin feature/amazing-feature
-Code Quality Standards
-✅ All PRs require CI pass (ci.yml)
-✅ Minimum 80% test coverage for new code
-✅ Documentation for public APIs
-✅ Conventional commits format
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-🙏 Acknowledgments
-Aya BPF - Incredible eBPF library for Rust
-Wasmtime - Fastest WASM runtime
-RedBPF - Inspiration for architecture
-📞 Contact & Support
-Discord: Join our community
-Issues: GitHub Issues
-Email: your@email.com
-<p align="center">
-<sub>Built with 🔥 and ☕ by <a href="https://github.com/YOUR_USER">Your Name</a></sub>
-</p>
-```
-
-🎨 Elementos Visuais Essenciais
-1. Logo (Crie um SVG simples)
-2. Demo GIF (Instruções)
-bash
-
-# Gravar tela com terminal dividido:
-# Esquerda: htop mostrando CPU baixa
-# Direita: ExecGuard rodando eventos em tempo real
-# Bottom: Grafana/Prometheus dashboard
-
-# Use: peek (Linux) ou gifski para criar animação
-⚙️ CI/CD Completo (.github/workflows/ci.yml)
-yaml
-
-name: CI/CD Pipeline
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    name: Test Suite
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Rust Toolchain
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: rustfmt, clippy
-      
-      - name: Cache Dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      
-      - name: Run Tests
-        run: cargo test --verbose --workspace
-      
-      - name: Check Formatting
-        run: cargo fmt --all -- --check
-      
-      - name: Lint Code
-        run: cargo clippy -- -D warnings
-  
-  build:
-    name: Build eBPF + WASM
-    runs-on: ubuntu-latest
-    needs: test
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang llvm libelf-dev \
-            libbpf-dev python3-pip wget
-      
-      - name: Install Rust + Aya Tools
-        uses: dtolnay/rust-toolchain@nightly
-      
-      - name: Build eBPF Program
-        run: cargo xtask bpf build
-      
-      - name: Build User Space
-        run: cargo build --release --workspace
-      
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: execguard-release
-          path: |
-            target/release/execguard-agent
-            target/bpf/*.o
-  
-  benchmark:
-    name: Performance Tests
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: checkout@v4
-      - name: Download Build
-        uses: actions/download-artifact@v3
-        with:
-          name: execguard-release
-      
-      - name: Run Benchmarks
-        run: cargo bench -- --save-baseline main
-      
-      - name: Store Benchmark Result
-        uses: action/cache@v3
-        with:
-          key: benchmark-${{ github.sha }}
-          path: target/criterion
-📝 DOCUMENTAÇÃO ADICIONAL (docs/book.md)
-ExecGuard Documentation
-Table of Contents
-Getting Started
-Architecture Guide
-Writing Policies
-Performance Tuning
-Deployment Guide
-Troubleshooting
-API Reference
-Getting Started
-Prerequisites Detail
-Why Nightly Rust?
-ExecGuard uses unstable features:
-
-inline_asm for eBPF helper calls
-generic_associated_types for async traits
-new_unbox for zero-cost allocations
-Kernel Requirements
-Minimum: 5.8+ (BTF - BPF Type Format)
-Recommended: 6.0+ (stable CO-RE - Compile Once Run Everywhere)
-Optimal: 6.5+ (new sleepable BPF programs)
-Troubleshooting Common Issues
-Issue: "permission denied while loading eBPF"
-# Solution: Add user to bpf group or use sudosudo groupadd -f bpfsudo usermod -aG bpf $USER# Logout and login again
-Issue: "WASM module failed to validate"
-bash
-
-# Debug mode
-RUST_LOG=debug ./target/release/execguard-agent
-# Check WASM module compatibility
-wasm-validate your_policy.wasm
+Project Structure
 text
 
+execguard/
+├── execguard-ebpf/          # eBPF kernel program (C/Aya)
+├── execguard-agent/         # User-space agent (Rust)
+├── execguard-wasm/          # WASM policy engine bindings
+├── examples/                # Example policies and configs
+│   ├── demo.toml
+│   └── rules/
+│       ├── basic.wasm
+│       └── strict.wasm
+├── scripts/                 # Build and utility scripts
+│   ├── setup_dev.sh
+│   ├── run_demo.sh
+│   └── benchmark.sh
+├── tests/                   # Test suites
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+└── docs/                    # Documentation
+    ├── architecture.md
+    ├── writing-policies.md
+    └── performance.md
+Writing Custom Policies
+ExecGuard uses WebAssembly for policy execution, providing both safety and flexibility.
 
----
+Simple Policy Example (Wat format)
+wat
 
-## 🎯 **CHECKLIST DE LANÇAMENTO**
+(module
+  ;; Import host functions provided by the agent
+  (import "env" "get_filename" (result (mut i32)))
+  (import "env" "get_comm" (result (mut i32)))
+  (import "env" "emit_score" (param i32))
+  
+  (memory (export "memory") 1)
+  
+  ;; Main evaluation function
+  (func (export "evaluate")
+    (local $score i32)
+    
+    ;; Check for /tmp execution (risk +5)
+    (call $check_tmp_path)
+    local.set $score
+    
+    ;; Check for reverse shell patterns (risk +5)
+    (call $check_reverse_shell)
+    local.get $score
+    i32.add
+    local.set $score
+    
+    ;; Emit final score back to agent
+    (local.get $score)
+    (call $emit_score)
+  )
+  
+  (func $check_tmp_path)
+    ;; Implementation: check if filename starts with "/tmp"
+    ;; Returns 5 if match, 0 otherwise
+  
+  (func $check_reverse_shell)
+    ;; Implementation: detect common reverse shell patterns
+    ;; Returns 5 if match, 0 otherwise
+)
+Compile to WASM:
 
-### **Antes de Commitar:**
+bash
 
-- [ ] README.md atualizado com novo template
-- [ ] Badges funcionando (substitua `YOUR_USER`)
-- [ ] Diagramas Mermaid renderizando corretamente
-- [ ] Screenshots/GIF na pasta `assets/`
-- [ ] `.github/workflows/ci.yml` criado
-- [ ] Testes passando (`cargo test`)
-- [ ] Formatação aplicada (`cargo fmt`)
-- [ ] Lint limpo (`cargo clippy`)
-- [ ] `CONTRIBUTING.md` adicionado
-- [ ] `LICENSE` verificado (MIT ok?)
-- [ ] Tags semânticas (v0.1.0, v0.2.0...)
+wat2wasm examples/policies/custom.wat -o custom.wasm
+For more details, see Writing Policies Guide.
 
-### **Pós-Lançamento:**
+Development
+Building from Source
+bash
 
-- [ ] Tweet sobre o projeto (thread técnica)
-- [ ] Postar em r/rust, r/eBPF, r/webassembly
-- [ ] Submeter para Awesome-eBPF lists
-- [ ] Criar demo vídeo (2 min no YouTube)
-- [ ] Escrever blog post médio ("Building X with Y")
+# Install Rust nightly with required components
+rustup toolchain install nightly
+rustup component add rust-src rustfmt clippy
 
----
+# Clone with submodules
+git clone --recursive https://github.com/youruser/execguard.git
+cd execguard
 
+# Build eBPF program
+cargo xtask bpf build
+
+# Build user-space components
+cargo build --workspace
+
+# Run tests
+cargo test --workspace
+Running Tests
+bash
+
+# Unit tests (no special permissions needed)
+cargo test --lib
+
+# Integration tests (requires root for eBPF)
+sudo -E cargo test --test integration
+
+# End-to-end tests with simulated events
+cargo test --test e2e -- --nocapture
+
+# Check code formatting
+cargo fmt --all -- --check
+
+# Run linter
+cargo clippy -- -D warnings
+Current Status
+Component
+Status
+Notes
+WASM Engine Integration	Complete	Wasmtime embedded in agent
+Event Simulation Framework	Complete	Mock events for testing
+Aya-based eBPF Loader	Complete	CO-RE support included
+Cross-compilation Support	Complete	Multi-arch builds working
+Native Linux Validation	In Progress	Real kernel testing pending
+Stateful Correlation Engine	Planned	Track process lineage
+RocksDB Storage Backend	Planned	Persistent event storage
+Hot Reload of WASM Modules	Planned	Zero-downtime updates
+Prometheus Metrics Export	Planned	/metrics endpoint
+OpenTelemetry Integration	Planned	Distributed tracing
+
+Roadmap
+Phase 1: Core Stability (Current)
+ Basic eBPF event collection
+ WASM policy execution
+ Async event pipeline
+ Native Linux validation
+ Comprehensive test coverage
+Phase 2: Production Readiness
+ Hot-reloadable policy modules
+ Stateful correlation engine
+ Persistent storage with RocksDB
+ Metrics and observability (Prometheus + OTel)
+Phase 3: Advanced Features
+ Kubernetes admission controller integration
+ Web UI for policy management
+ ML-based anomaly detection module
+ Distributed deployment support
+See docs/roadmap.md for detailed timeline and milestones.
+
+Limitations
+Platform Requirements
+Full eBPF functionality requires native Linux kernel
+Minimum kernel version: 5.8 (for BTF support)
+Recommended kernel version: 6.0+ (stable CO-RE features)
+Development Environment
+WSL2 is supported for development and compilation
+However, WSL2 does not provide complete kernel capabilities
+For runtime validation, native Linux environment is required
+Tested distributions: Ubuntu 22.04, Fedora 38, Arch Linux
+Known Issues
+See GitHub Issues for current bugs and limitations
+Performance may vary based on kernel configuration
+Some security features require elevated privileges (CAP_BPF, CAP_SYS_ADMIN)
+Contributing
+Contributions are welcome! Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.
+
+Development Workflow
+Fork the repository and create your branch (git checkout -b feature/amazing-feature)
+Make your changes following the existing code style
+Ensure all tests pass (cargo test && cargo fmt && cargo clippy)
+Commit your changes (git commit -m 'Add amazing feature')
+Push to the branch (git push origin feature/amazing-feature)
+Open a Pull Request
+Code Standards
+Follow Rust naming conventions and idioms
+Write documentation for public APIs
+Maintain test coverage above 80%
+Use conventional commit messages
+License
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+Acknowledgments
+Aya BPF Framework - Rust library for eBPF
+Wasmtime - Fast and secure WebAssembly runtime
+libbpf - BPF library inspiration
+The broader eBPF and WebAssembly communities
+Contact
+GitHub Issues: Report bugs or request features
+Discussions: Join community discussions
+Email: your.email@example.com
+<div align="center">
+
+Built with care using Rust, eBPF, and WebAssembly
+
+</div>
+```
+
+🎨 Principais Melhorias Visuais:
+✅ Problemas Corrigidos:
+Antes
+Depois
+Emojis excessivos 🎯🚀⚡	Apenas badges informativos
+Tabelas com cores fortes	Tabelas limpas e minimalistas
+Muito texto compacto	Espaçamento adequado entre seções
+Diagrama Mermaid complexo	ASCII art simples e universal
+Badges coloridos demais	Apenas 4 badges essenciais
+Seções muito longas	Divisão clara com linhas horizontais
+
+📐 Mudanças de Layout:
+Tipografia Consistente
+Títulos em ## (não misturar tamanhos)
+Texto em parágrafos normais (não negrito excessivo)
+Código em blocos bem definidos
+Espaçamento Adequado
+Linhas horizontais (---) entre seções principais
+Linhas em branco após listas e tabelas
+Blocos de código separados do texto
+Hierarquia Visual Clara
+Overview curto e objetivo
+Arquitetura com diagrama ASCII (renderiza em qualquer lugar)
+Seções progressivas: simple → complexo
+Cores Controladas
+Apenas badges no header (não espalhados pelo texto)
+Sem cores nas tabelas
+Sem highlight em texto
+🔧 Se Quiser Ainda Mais Minimalista:
+Versão extrema (quase só texto):
+
+ExecGuard
+Runtime Security Pipeline using eBPF telemetry and WebAssembly policy execution.
+
+What It Does
+ExecGuard monitors Linux process executions using eBPF and evaluates security policies in WebAssembly sandboxes.
+
+How It Works
+eBPF program captures execve syscalls in kernel space
+Events are sent to user-space via ring buffer
+Agent processes events through WASM policy modules
+Risk scores determine actions: allow, block, or alert
+Quick Start
+git clone https://github.com/user/execguard.gitcd execguardcargo build --releasesudo ./target/release/execguard-agent
+Documentation
+Architecture
+Writing Policies
+Performance Benchmarks
+License
+MIT
