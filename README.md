@@ -8,29 +8,30 @@ Overview
 ExecGuard is an experimental security platform that captures Linux process execution events through eBPF and evaluates them inside sandboxed WebAssembly modules.
 
 The architecture separates event collection from policy execution, allowing security rules to be updated independently from the kernel instrumentation layer.
----
-config:
-  layout: elk
----
+
+```mermaid
 flowchart TB
-    A["eBPF Program"] -- Events --> B["Ring Buffer"]
-    B -- mmap --> C["Agent<br>(Async Rust)"]
-    C --> D["WASM Runtime<br>(Wasmtime)"]
-    D --> E["Policy Module<br>(.wasm file)"]
-    E --> F["JSON Events"] & G["Prometheus Metrics"] & H["Syslog"]
 
-     A:::kernelSpace
-     B:::kernelSpace
-     C:::userSpace
-     D:::userSpace
-     E:::userSpace
-     F:::output
-     G:::output
-     H:::output
-    classDef kernelSpace stroke:#818cf8,fill:#eef2ff
-    classDef userSpace stroke:#2dd4bf,fill:#f0fdfa
-    classDef output stroke:#4ade80,fill:#f0fdf4
+    A["eBPF Program"] --> B["Ring Buffer"]
 
+    B --> C["Agent<br/>Async Rust"]
+
+    C --> D["WASM Runtime<br/>Wasmtime"]
+
+    D --> E["Policy Module<br/>.wasm"]
+
+    E --> F["JSON Events"]
+    E --> G["Prometheus Metrics"]
+    E --> H["Syslog"]
+
+    classDef kernel fill:#eef2ff,stroke:#6366f1
+    classDef user fill:#f0fdfa,stroke:#14b8a6
+    classDef output fill:#f0fdf4,stroke:#22c55e
+
+    class A,B kernel
+    class C,D,E user
+    class F,G,H output
+```
 
 ### Detection Capabilities
 
